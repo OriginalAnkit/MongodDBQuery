@@ -1,0 +1,137 @@
+Map 2 arrays of data using $map and $mergeObjects
+
+//++++++++++++++++++Data+++++++++++++++++++++++++++++++++++
+db={
+  "activity": [
+    {
+      "_id": "a1",
+      "users": [
+        {
+          id: 1,
+          status: "accepted"
+        },
+        {
+          id: 2,
+          status: "rejected"
+        }
+      ]
+    },
+    {
+      "_id": "a2",
+      "users": [
+        {
+          id: 3,
+          status: "accepted"
+        },
+        {
+          id: 1,
+          status: "rejected"
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "_id": 1,
+      "name": "Auser"
+    },
+    {
+      "_id": 2,
+      "name": "Buser"
+    },
+    {
+      "_id": 3,
+      "name": "Cuser"
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+//++++++++++++++++++++++++++++++++++++++query++++++++++++++++++++++++++++++++++++++++++
+
+db.activity.aggregate([
+  {
+    $lookup: {
+      from: "users",
+      localField: "users.id",
+      foreignField: "_id",
+      as: "userData"
+    }
+  },
+  {
+    $project: {
+      userStatus: {
+        $map: {
+          input: "$userData",
+          in: {
+            $mergeObjects: [
+              "$$this",
+              {
+                $arrayElemAt: [
+                  "$users",
+                  {
+                    $indexOfArray: [
+                      "$users.id",
+                      "$$this._id"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+])
+
+
+
+//++++++++++++++++++++++++++output++++++++++++++++++++++++++++++++++++
+[
+  {
+    "_id": "a1",
+    "userStatus": [
+      {
+        "_id": 1,
+        "id": 1,
+        "name": "Auser",
+        "status": "accepted"
+      },
+      {
+        "_id": 2,
+        "id": 2,
+        "name": "Buser",
+        "status": "rejected"
+      }
+    ]
+  },
+  {
+    "_id": "a2",
+    "userStatus": [
+      {
+        "_id": 1,
+        "id": 1,
+        "name": "Auser",
+        "status": "rejected"
+      },
+      {
+        "_id": 3,
+        "id": 3,
+        "name": "Cuser",
+        "status": "accepted"
+      }
+    ]
+  }
+]
