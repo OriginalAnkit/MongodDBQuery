@@ -1,4 +1,5 @@
 Map 2 arrays of data using $map and $mergeObjects
+https://mongoplayground.net/p/D9UxObsYbqk
 
 //++++++++++++++++++Data+++++++++++++++++++++++++++++++++++
 db={
